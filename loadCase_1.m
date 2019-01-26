@@ -1,5 +1,5 @@
 % General analysis of a simple beam structure with 3 supported ends
-clear;clc;
+clear;clc; close all;
 
 %% Guess RT and initialize positional vars
 RT = 0;
@@ -58,3 +58,47 @@ figure;
 plot(x, shearForce);
 figure;
 plot(x, bendingMoments);
+
+%% Shear Flow
+thickness = 0.003;
+radiusFuselage = (166.5+148.7)/4*0.0254;
+n = 80;
+sectorAngle = 360/n;
+pitch = pi*2*radiusFuselage/n; % distance between booms
+As = 4e-4; % stringer x sectional area
+y = zeros(1,n);
+for i=1:length(y)
+    y(i) = radiusFuselage*sind((i-1)*sectorAngle); % height of boom above neutral axis
+end
+boomArea = As + (thickness*pitch/6)*(2+y(3)/y(2))+(thickness*pitch/6)*(2+y(1)/y(2));
+Sy = max(shearForce); 
+Ixx = boomArea * sum(y.*y);
+cumulative = 0;
+qb = zeros(1,n-1);
+for i=2:n
+    qb(i) = cumulative - Sy/Ixx*sum(boomArea*y(i-1));
+    cumulative = qb(i);
+end
+qs0 = -sum(qb)/n;
+qs = qb + qs0;
+qsGraph = abs(qs);
+%% Plot Shear Flow
+theta = 0:0.1:360;
+x1 = radiusFuselage*cosd(theta);
+y1 = radiusFuselage*sind(theta);
+figure;
+plot(x1,y1);
+hold on;
+startPanel = 1;
+lenPanel = floor(length(theta)/n);
+for i=1:n
+    xPanel = (radiusFuselage + qsGraph(i)/(10^7))*cosd(theta(startPanel:startPanel+lenPanel-1));
+    yPanel = (radiusFuselage + qsGraph(i)/(10^7))*sind(theta(startPanel:startPanel+lenPanel-1));
+    startPanel = startPanel + lenPanel;
+    plot(xPanel, yPanel, 'r');
+    plot(radiusFuselage*sind((i-1)*sectorAngle), ...
+    radiusFuselage*cosd((i-1)*sectorAngle), 'k.', 'MarkerSize', 10);
+end
+hold off;
+
+% to show relative shear flow on panels, add qs (/10^7) to current x1 and y1
