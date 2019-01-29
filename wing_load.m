@@ -40,12 +40,12 @@ distWeight= qw(x);
 % Calculate shear force
 shearForce = zeros(1,length(x));
 for i=1:length(x)-1
-shearForce(i) = integral(ql, x(i), wingSemiSpan )+ integral(qw, x(i), wingSemiSpan );
+    shearForce(i) = integral(ql, x(i), wingSemiSpan )+ integral(qw, x(i), wingSemiSpan );
 end
 
 
 %Calculate moment
 bendingMoment = zeros(1,length(x));
 for i=1:length(x)-1
-bendingMoment(i) = trapz(x(i:length(x)), shearForce(i:length(x)));
+    bendingMoment(i) = trapz(x(i:length(x)), shearForce(i:length(x)));
 end
