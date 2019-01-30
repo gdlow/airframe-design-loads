@@ -1,13 +1,15 @@
 % General analysis of a simple beam structure with 3 supported ends
 clear;clc; close all;
 
-%% Guess RT and initialize positional vars
-RT = 0;
-xT = 38.0;
-xF = 15;
-xR = 18;
+%% Set RT=0 and initialize positional vars
+RT = 0; % Reaction at tail
+[vals, names] = xlsread('geometryVariables.xlsx', 'Data', 'B:C');
+geoParams = containers.Map(names(2:end,1), vals);
+x_tail = geoParams('x_tail');
+x_frontSpar = geoParams('x_frontSpar'); % distance to front spar
+x_rearSpar = geoParams('x_rearSpar'); % distance to rear spar
 %% Get x distribution across fuselage
-lenFuselage = 42.6;
+lenFuselage = geoParams('lenFuselage');
 x = 0:0.1:lenFuselage;
 
 %% Get distributed loads
@@ -28,26 +30,26 @@ for i=1:length(massArray)
 end
 
 %% Obtain reaction forces
-RR = (sum(distLoad.*x) - xT*RT - xF*(sum(distLoad)-RT))/(xR-xF);
-RF = (sum(distLoad.*x) - xT*RT - xR*(sum(distLoad)-RT))/(xF-xR);
+RR = (sum(distLoad.*x) - x_tail*RT - x_frontSpar*(sum(distLoad)-RT))/(x_rearSpar-x_frontSpar);
+RF = (sum(distLoad.*x) - x_tail*RT - x_rearSpar*(sum(distLoad)-RT))/(x_frontSpar-x_rearSpar);
 
 %% Obtain shear force and bending moment distribution
 % take moments about cut face - moment arm is x(i)-x
 shearForce = zeros(1, length(x));
 bendingMoments = zeros(1, length(x));
 for i=1:length(x)
-    if x(i) < xF
+    if x(i) < x_frontSpar
         shearForce(i) = sum(distLoad(1:i));
         bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i));
-    elseif x(i) < xR
+    elseif x(i) < x_rearSpar
         shearForce(i) = sum(distLoad(1:i)) - RF;
-        bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i)) - RF*(x(i)-xF);
-    elseif x(i) < xT
+        bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i)) - RF*(x(i)-x_frontSpar);
+    elseif x(i) < x_tail
         shearForce(i) = sum(distLoad(1:i)) - RF - RR;
-        bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i)) - RF*(x(i)-xF) - RR*(x(i)-xR);
+        bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i)) - RF*(x(i)-x_frontSpar) - RR*(x(i)-x_rearSpar);
     else
         shearForce(i) = sum(distLoad(1:i)) - RF - RR - RT;
-        bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i)) - RF*(x(i)-xF) - RR*(x(i)-xR) - RT*(x(i)-xT);
+        bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i)) - RF*(x(i)-x_frontSpar) - RR*(x(i)-x_rearSpar) - RT*(x(i)-x_tail);
     end
 end
 
@@ -60,12 +62,12 @@ figure;
 plot(x, bendingMoments);
 
 %% Shear Flow
-thickness = 0.003;
-radiusFuselage = (166.5+148.7)/4*0.0254;
+thickness = geoParams('thickness');
+radiusFuselage = geoParams('radiusFuselage');
 n = 80;
 sectorAngle = 360/n;
 pitch = pi*2*radiusFuselage/n; % distance between booms
-As = 4e-4; % stringer x sectional area
+As = geoParams('As'); % stringer cross sectional area
 y = zeros(1,n);
 for i=1:length(y)
     y(i) = radiusFuselage*sind((i-1)*sectorAngle); % height of boom above neutral axis

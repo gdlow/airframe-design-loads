@@ -1,29 +1,33 @@
 % General analysis for asymmetric loading scenario
 % Analysis of cantilever beam constrained at the wing box
 % Analysis considered only for aft fuselage
-
+clear;
+clc;
+close all;
 %% Enter geometrical positions
-radiusFuselage = (166.5+148.7)/4*0.0254;
-lenFuselage = 42.6;
+[vals, names] = xlsread('geometryVariables.xlsx', 'Data', 'B:C');
+geoParams = containers.Map(names(2:end,1), vals);
+radiusFuselage = geoParams('radiusFuselage');
+lenFuselage = geoParams('lenFuselage');
 x = 0:0.1:lenFuselage;
-wingBoxLoc = 18.0;
-xT = 38.0;
+wingBoxLoc = geoParams('wingBoxLoc');
+x_tail = geoParams('x_tail');
 % vertical stabiliser
-chordRootVert = 4.76;
-chordTipVert = 4.28;
-MACVert = 4.52;
-ARVert = 1.2;
-sVert = ARVert * MACVert/2;
+rootChordLen_v = geoParams('rootChordLen_v');
+tipChordLen_v = geoParams('tipChordLen_v');
+MAC_v = geoParams('MAC_v');
+aspectRatio_v = geoParams('aspectRatio_v');
+sVert = aspectRatio_v * MAC_v^2 / 2;
 % z location measured from center of fuselage
-zLoc = radiusFuselage + sVert*(chordRootVert - MACVert) / (chordRootVert - chordTipVert);
+zLoc = radiusFuselage + sVert*(rootChordLen_v - MAC_v) / (rootChordLen_v - tipChordLen_v);
 % horizontal stabiliser
-chordRootHor = 3.62;
-chordTipHor = 1.45;
-MACHor = 2.54;
-ARHor = 4;
-sHor = ARHor / MACHor/2;
+rootChordLen_h = geoParams('rootChordLen_h');
+tipChordLen_h = geoParams('tipChordLen_h');
+MAC_h = geoParams('MAC_h');
+aspectRatio_h = geoParams('aspectRatio_h');
+sHor = aspectRatio_h * MAC_h^2 / 2;
 % on both ends of horizontal stabiliser
-yLoc = sHor*(chordRootHor - MACHor) / (chordRootHor - chordTipHor);
+yLoc = sHor*(rootChordLen_h - MAC_h) / (rootChordLen_h - tipChordLen_h);
 
 %% Obtain torque around fuselage and resultant shear flow
 T = 50*10^3*zLoc + 50*10^3*yLoc; % CW
@@ -49,25 +53,25 @@ end
 %% Reconfigure distances to start from wingbox
 distLoad = distLoad(wingBoxLoc*10:end);
 x = 0:0.1:length(distLoad)/10; x = x(1:end-1);
-xT = xT - wingBoxLoc;
+x_tail = x_tail - wingBoxLoc;
 
 %% Obtain reaction forces and moments at wing box
 % Force equilibrium
 Rf = sum(distLoad) - 100*10^3;
 % Moments equilibrium (ACW on wall)
-Mf = sum(x.*distLoad) - xT*100*10^3;
+Mf = sum(x.*distLoad) - x_tail*100*10^3;
 
 %% Obtain shear forces and bending moments distribution
 % take moments about cut face - moment arm is x(i)-x
 shearForce = zeros(1, length(x));
 bendingMoments = zeros(1, length(x));
 for i=1:length(x)
-    if x(i) < xT
+    if x(i) < x_tail
         shearForce(i) = sum(distLoad(1:i)) - Rf;
         bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i)) + Mf - Rf*x(i);
     else
         shearForce(i) = sum(distLoad(1:i)) - Rf - 100*10^3;
-        bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i)) + Mf - Rf*x(i) - 100*10^3*(x(i)-xT);
+        bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i)) + Mf - Rf*x(i) - 100*10^3*(x(i)-x_tail);
     end
 end
 
@@ -80,12 +84,12 @@ figure;
 plot(x, bendingMoments);
 
 %% Shear flow
-thickness = 0.003;
-radiusFuselage = (166.5+148.7)/4*0.0254;
+thickness = geoParams('thickness');
+radiusFuselage = geoParams('radiusFuselage');
 n = 80;
 sectorAngle = 360/n;
 pitch = pi*2*radiusFuselage/n; % distance between booms
-As = 4e-4; % stringer x sectional area
+As = geoParams('As'); % stringer x sectional area
 y = zeros(1,n);
 for i=1:length(y)
     y(i) = radiusFuselage*sind((i-1)*sectorAngle); % height of boom above neutral axis
@@ -125,13 +129,13 @@ hold off;
 %% Bending about x-y plane
 pointLoadxy = 50*10^3;
 Rfxy = pointLoadxy;
-Mfxy = pointLoadxy*xT; %ACW
+Mfxy = pointLoadxy*x_tail; %ACW
 shearForcexy = zeros(1, length(x));
-shearForcexy(1:xT*10) = - Rfxy;
-shearForcexy(xT*10+1:end) = pointLoadxy - Rfxy;
+shearForcexy(1:x_tail*10) = - Rfxy;
+shearForcexy(x_tail*10+1:end) = pointLoadxy - Rfxy;
 bendingMomentsxy = zeros(1,length(x));
-bendingMomentsxy(1:xT*10) = Mfxy - x(1:xT*10).*Rfxy;
-bendingMomentsxy(xT*10+1:end) = Mfxy - x(xT*10+1:end).*Rfxy + (x(xT*10+1:end) - xT).*pointLoadxy;
+bendingMomentsxy(1:x_tail*10) = Mfxy - x(1:x_tail*10).*Rfxy;
+bendingMomentsxy(x_tail*10+1:end) = Mfxy - x(x_tail*10+1:end).*Rfxy + (x(x_tail*10+1:end) - x_tail).*pointLoadxy;
 
 figure;
 plot(x, shearForcexy);

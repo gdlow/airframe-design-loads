@@ -27,7 +27,7 @@ wingStructureWeight = 0.11 * takeOffWeight; % weight of wing structure (11%) [N]
 
 
 % Wing load due to lift
-%q_l= (2*W_TO*n)/(pi*L^2)*sqrt(L^2-x.^2);
+%q_l= (4*W_TO*n)/(pi*L^2)*sqrt(L^2-x.^2);
 ql = @(x)(2*takeOffWeight*n)/(pi*wingSemiSpan^2)*sqrt(wingSemiSpan^2-x.^2); % lift function
 distLift= ql(x);
 

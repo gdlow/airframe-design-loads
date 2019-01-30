@@ -4,9 +4,11 @@
 clear;clc;
 
 %% Initialize positional vars
-xmg = 19.3;
+[vals, names] = xlsread('geometryVariables.xlsx', 'Data', 'B:C');
+geoParams = containers.Map(names(2:end,1), vals);
+x_mg = geoParams('x_mg');
 %% Get x distribution across fuselage
-lenFuselage = 42.6;
+lenFuselage = geoParams('lenFuselage');
 x = 0:0.1:lenFuselage;
 
 %% Get distributed loads
@@ -31,18 +33,18 @@ Rmg = sum(distLoad);
 
 %% Obtain overall Bending moment on fuselage
 % +ve ACW
-overallMoments = sum((xmg - x).*distLoad);
+overallMoments = sum((x_mg - x).*distLoad);
 %% Obtain shear force and bending moment distribution
 % take moments about cut face - moment arm is x(i)-x
 shearForce = zeros(1, length(x));
 bendingMoments = zeros(1, length(x));
 for i=1:length(x)
-    if x(i) < xmg
+    if x(i) < x_mg
         shearForce(i) = sum(distLoad(1:i));
         bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i));
     else
         shearForce(i) = sum(distLoad(1:i)) - Rmg;
-        bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i)) - Rmg*(x(i)-xmg);
+        bendingMoments(i) = sum((x(i)-x(1:i)).*distLoad(1:i)) - Rmg*(x(i)-x_mg);
     end
 end
 bendingMoments = bendingMoments - overallMoments; % CW - ACW; bendingMoments defined CW on +ve face
