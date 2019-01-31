@@ -33,5 +33,5 @@ end
 % Moment
 bendingMomentFuel = zeros(1,length(x));
 for i=1:length(x)-1
-    bendingMomentFuel(i) = -trapz(x(i:length(x)), shearForceFuel(i:length(x)));
+    bendingMomentFuel(i) = trapz(x(i:length(x)), shearForceFuel(i:length(x)));
 end
