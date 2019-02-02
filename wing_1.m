@@ -30,10 +30,10 @@ rho = 1.1; % at altitude 37000 ft
 %% Get values from wing_load and fuel_load
 
 % self weight both lift
-[x, chord, distLift, distWeightWing, shearForceWing, bendingMomentWing] = wing_load(rootChordLen_w, tipChordLen_w , wingSemiSpan , takeOffWeight , N , n);
+[x, chord, distLift, distWeightWing, shearForceWing, bendingMomentWing] = wing_load(rootChordLen_w, tipChordLen_w , wingSemiSpan , takeOffWeight*9.81 , N , n);
 
 % Fuel
-[distWeightFuel, shearForceFuel, bendingMomentFuel] = fuel_load(rootChordLen_w, tipChordLen_w , wingSemiSpan , takeOffWeight , N , n, fuelTankLen);
+[distWeightFuel, shearForceFuel, bendingMomentFuel] = fuel_load(rootChordLen_w, tipChordLen_w , wingSemiSpan , takeOffWeight*9.81 , N , n, fuelTankLen);
 
 
 flexAxis = 0.45*chord; % Flex axis is 25 to 65 of chord
@@ -46,24 +46,21 @@ b = cgWing - flexAxis; % difference between cg with respect to chord of wing and
 
 % first iteration assumed point load
 % 2 entries so it is the same size for plotting
-e1 = geoParams('engineLoc_1');
-e2 = geoParams('engineLoc_2');
+engineLoc_1 = geoParams('engineLoc_1'); % [m]
+engineLoc_2 = geoParams('engineLoc_2'); % [m]
 ew = geoParams('engineWeight');
-engineLoc_1=[e1,e1]; % in [m]
-engineWeight_1=[0,-ew*9.81]; % in [N]
-
-engineLoc_2=[e2,e2]; % in [m]
-engineWeight_2=[0,-ew*9.81]; % in [N]
+engineWeight_1=-ew*9.81; % in [N]
+engineWeight_2=-ew*9.81; % in [N]
 
 % load distributions
 distLoad = distLift+distWeightWing+distWeightFuel;
 panelDist = wingSemiSpan/N;
 
-loc_1 = find(x>engineLoc_1(1)-panelDist,1); % position of engine 1
-loc_2 = find(x>engineLoc_2(1)-panelDist,1); % position of engine 2
-
-distLoad(loc_1) = distLoad(loc_1)+engineWeight_1(2); % total load with engine 1
-distLoad(loc_2) = distLoad(loc_2)+engineWeight_2(2); % total load with engine 2
+loc_1 = find(x>engineLoc_1-panelDist,1); % position of engine 1
+loc_2 = find(x>engineLoc_2-panelDist,1); % position of engine 2
+% add concentrated loads from engines
+distLoad(loc_1) = distLoad(loc_1)+engineWeight_1; % total load with engine 1
+distLoad(loc_2) = distLoad(loc_2)+engineWeight_2; % total load with engine 2
 
 figure;
 hold on
@@ -74,8 +71,13 @@ plot(x,distWeightFuel,'g') % fuel weight
 plot(x,distLoad,'k') % total load
 hold off
 
-totalMoments = bendingMomentWing+bendingMomentFuel-((engineWeight_1(1)*engineLoc_1(2))+(engineWeight_2(1)*engineLoc_2(2)));
-
+totalMoments = bendingMomentWing+bendingMomentFuel;
+for i=1:loc_1
+    totalMoments(i) = totalMoments(i) - (engineWeight_1*(engineLoc_1-x(i)));
+end
+for i=1:loc_2
+    totalMoments(i) = totalMoments(i) - (engineWeight_2*(engineLoc_2-x(i)));
+end
 % moment distribution
 figure;
 hold on
@@ -86,6 +88,9 @@ hold off
 
 % shear force:
 totalShearForce = shearForceWing+shearForceFuel;
+% add concentrated loads from engines
+totalShearForce(1:loc_1) = totalShearForce(1:loc_1) + engineWeight_1;
+totalShearForce(1:loc_2) = totalShearForce(1:loc_2) + engineWeight_2;
 
 figure;
 hold on

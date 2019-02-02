@@ -25,8 +25,8 @@ x = linspace(0, wingSemiSpan, N); % along wing span [m]
 chord = rootChordLen - ((rootChordLen - tipChordLen)/wingSemiSpan) * x; %chord length [m]
 
 % Wing load due to lift
-%q_l= (4*W_TO*n)/(pi*L^2)*sqrt(L^2-x.^2);
-ql = @(x)(-4*horizontalStabilizerLift*n)*sqrt(wingSemiSpan^2-x.^2)/(pi*wingSemiSpan^2); % lift function
+% q_l= (4*W_TO*n)/(pi*L^2)*sqrt(L^2-x.^2);
+ql = @(x)(4*horizontalStabilizerLift*n)*sqrt(wingSemiSpan^2-x.^2)/(pi*wingSemiSpan^2); % lift function
 distLift= ql(x);
 
 

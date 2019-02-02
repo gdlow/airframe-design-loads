@@ -37,10 +37,11 @@ x_tail = geoParams('x_tail'); x_cg = geoParams('x_cg'); x_ac = geoParams('x_ac')
 momentArmTailPlane = x_tail - x_cg;
 momentArmWing = x_cg - x_ac; % assumes x_ac is before x_cg
 CM0_w = geoParams('CM0_w');
+CM0 = 0.5*rho*cruiseVelocity^2*Sref*MAC_wing*CM0_w;
 takeOffWeight = geoParams('takeOffWeight');
 % this gets it for half the entire horizontal stabilizer
-horizontalStabilizerLift = 0.5 * (1/momentArmTailPlane) * ...
-    (-0.5*rho*cruiseVelocity^2*Sref*MAC_wing*CM0_w + n*takeOffWeight*momentArmWing); % TODO: Check direction
+horizontalStabilizerLift = 0.5 * (momentArmWing*takeOffWeight*9.81-CM0) / ...
+    (momentArmWing+momentArmTailPlane);
 %% Function call to get shear forces and bending moments
 [x, chord, distLift, distWeightWing, shearForceWing, bendingMomentWing] = ...
     horizontal_stabilizer_load(rootChordLen_h, tipChordLen_h , wingSemiSpan , ...
