@@ -25,7 +25,7 @@ fuelTankLen = geoParams('fuelTankLen'); % pct of semi-span from root
 %% Enter operating conditions and pitch aerodyamic moment
 CM0_w = geoParams('CM0_w'); % pitch aerodynamic moment from airofoil data
 cruiseVelocity = 232.78;
-rho = 1.1; % at altitude 37000 ft
+rho = 0.350085776097978; % at altitude 37000 ft
 
 %% Get values from wing_load and fuel_load
 
@@ -100,7 +100,7 @@ plot(x,totalShearForce,'k')
 hold off
 
 M_0=0.5*rho*cruiseVelocity^2.*chord.^2*CM0_w;
-T=distLift.*a*wingSemiSpan+(distLoad-distLift).*b*wingSemiSpan-M_0;
+T=distLift.*a-(distLoad-distLift).*b-M_0;
 
 figure;
 hold on

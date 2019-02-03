@@ -17,17 +17,17 @@ rootChordLen_v = geoParams('rootChordLen_v');
 tipChordLen_v = geoParams('tipChordLen_v');
 MAC_v = geoParams('MAC_v');
 aspectRatio_v = geoParams('aspectRatio_v');
-sVert = aspectRatio_v * MAC_v^2 / 2;
+spanVert = aspectRatio_v * MAC_v / 2;
 % z location measured from center of fuselage
-zLoc = radiusFuselage + sVert*(rootChordLen_v - MAC_v) / (rootChordLen_v - tipChordLen_v);
+zLoc = radiusFuselage + spanVert*(rootChordLen_v - MAC_v) / (rootChordLen_v - tipChordLen_v);
 % horizontal stabiliser
 rootChordLen_h = geoParams('rootChordLen_h');
 tipChordLen_h = geoParams('tipChordLen_h');
 MAC_h = geoParams('MAC_h');
 aspectRatio_h = geoParams('aspectRatio_h');
-sHor = aspectRatio_h * MAC_h^2 / 2;
+spanHor = aspectRatio_h * MAC_h / 2;
 % on both ends of horizontal stabiliser
-yLoc = sHor*(rootChordLen_h - MAC_h) / (rootChordLen_h - tipChordLen_h);
+yLoc = spanHor*(rootChordLen_h - MAC_h) / (rootChordLen_h - tipChordLen_h);
 
 %% Obtain torque around fuselage and resultant shear flow
 T = 50*10^3*zLoc + 50*10^3*yLoc; % CW
@@ -44,12 +44,17 @@ distLoad = zeros(1, length(x));
 for i=1:length(massArray)
     if conc(i) == 999
         for j=distStart(i)*10:distEnd(i)*10
-            distLoad(j+1) = distLoad(j+1) + massArray(i);
+            distLoad(j+1) = distLoad(j+1) + massArray(i)/(distEnd(i)-distStart(i));
         end
     else
         distLoad(conc(i)*10+1) = distLoad(conc(i)*10+1) + massArray(i);
     end 
 end
+
+%% Multiply by load factor*g
+n = 1*9.81;
+distLoad = distLoad.*n;
+
 %% Reconfigure distances to start from wingbox
 distLoad = distLoad(wingBoxLoc*10:end);
 x = 0:0.1:length(distLoad)/10; x = x(1:end-1);

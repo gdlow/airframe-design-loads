@@ -21,12 +21,15 @@ distLoad = zeros(1, length(x));
 for i=1:length(massArray)
     if conc(i) == 999
         for j=distStart(i)*10:distEnd(i)*10
-            distLoad(j+1) = distLoad(j+1) + massArray(i);
+            distLoad(j+1) = distLoad(j+1) + massArray(i)/(distEnd(i)-distStart(i));
         end
     else
         distLoad(conc(i)*10+1) = distLoad(conc(i)*10+1) + massArray(i);
     end 
 end
+%% Multiply by load factor*g
+n = 1*9.81;
+distLoad = distLoad.*n;
 
 %% Obtain reaction forces
 Rmg = sum(distLoad);
