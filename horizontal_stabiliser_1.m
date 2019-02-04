@@ -58,26 +58,50 @@ distLoad = distLift+distWeightWing;
 
 figure;
 hold on
-plot(x,distLift,'b') % lift
-plot(x,distWeightWing,'r') % self weight
-plot(x,distLoad,'k') % total load
-
+grid on; grid minor;
+title('Distributed Loads on Horizontal Stabilizer');
+xlabel('Span along Wing [m]');
+ylabel('Load per unit meter [N/m]');
+plot(x,distLift,'b', 'LineWidth', 2) % lift
+plot(x,distWeightWing,'r', 'LineWidth', 2) % self weight
+plot(x,distLoad,'k', 'LineWidth', 2) % total load
+legend('Elliptical Lift Distribution', 'Distributed Weight due to Self-Weight', ...
+    'Total Load (including Engine Loads)');
 hold off
 
 % moment distribution
 figure;
-plot(x,bendingMomentWing,'k') % all
+hold on;
+grid on; grid minor;
+title('Bending Moment Distribution across Horizontal Stabilizer');
+xlabel('Span along wing [m]');
+ylabel('Moment per unit meter [N]');
+plot(x,bendingMomentWing,'k', 'LineWidth', 2) % all
+legend('Bending Moment on the Horizontal Stabilizer due to self-weight and lift');
+hold off
 
 % shear force:
 figure;
-plot(x, shearForceWing,'k')
+hold on;
+grid on; grid minor;
+title('Shear Force Distribution across Horizontal Stabilizer');
+xlabel('Span along wing [m]');
+ylabel('Shear Force per unit meter [N/m]');
+plot(x, shearForceWing,'k', 'LineWidth', 2)
+legend('Shear Force on the Wing due to self-weight and lift');
+hold off
 
+% torque distribution
 M_0 = 0.5*rho*cruiseVelocity^2.*chord.^2.*CM0_h;
 T = distLift.*a-distWeightWing.*b;
 
 figure;
 hold on
-plot(x,T) % torque along span
+grid on; grid minor;
+title('Torque Distribution across Horizontal Stabilizer');
+xlabel('Span along Horizontal Stabilizer [m]');
+ylabel('Torque per unit meter [N]');
+plot(x,T, 'LineWidth', 2) % torque along span
 hold off
 
 
