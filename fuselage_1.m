@@ -58,11 +58,29 @@ end
 
 %% Plot result
 figure;
-plot(x, distLoad);
+hold on;
+grid on;
+title('Distributed Load along fuselage length');
+xlabel('x [m]');
+ylabel('Distributed Load [N]');
+plot(x, distLoad, 'LineWidth', 2);
+hold off;
 figure;
-plot(x, shearForce);
+hold on;
+grid on;
+title('Shear Force along fuselage length');
+xlabel('x [m]');
+ylabel('Shear Force [N]');
+plot(x, shearForce, 'LineWidth', 2);
+hold off;
 figure;
-plot(x, bendingMoments);
+hold on;
+grid on;
+title('Bending Moment along fuselage length');
+xlabel('x [m]');
+ylabel('Bending Moment [Nm]');
+plot(x, bendingMoments, 'LineWidth', 2);
+hold off;
 
 %% Shear Flow
 thickness = geoParams('thickness');

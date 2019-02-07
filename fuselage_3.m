@@ -7,10 +7,20 @@ clear;clc;
 [vals, names] = xlsread('geometryVariables.xlsx', 'Data', 'B:C');
 geoParams = containers.Map(names(2:end,1), vals);
 x_mg = geoParams('x_mg');
+aspectRatio_w = geoParams('aspectRatio_w');
+MAC_wing = geoParams('MAC_wing');
+Sref = aspectRatio_w * MAC_wing^2;
+CM0_w = geoParams('CM0_w');
+rho = 1; % at 0ft
+V_TO = 100; % [ms-1] %TODO: Change this variable
+alpha_TO = geoParams('alpha_TO');
 %% Get x distribution across fuselage
 lenFuselage = geoParams('lenFuselage');
 x = 0:0.1:lenFuselage;
 
+%% Re-orientate x-z plane to alpha_TO
+x_mg = x_mg * cosd(alpha_TO);
+x = x .* cosd(alpha_TO);
 %% Get distributed loads
 % Components are either taken to be point loads or evenly distributed loads
 % all measurements in S.I units
@@ -36,7 +46,9 @@ Rmg = sum(distLoad);
 
 %% Obtain overall Bending moment on fuselage
 % +ve ACW
-overallMoments = sum((x_mg - x).*distLoad);
+
+M0_g = 0.5*rho*V_TO^2*Sref*MAC_wing*CM0_w;
+overallMoments = sum((x_mg - x).*distLoad) + M0_g;
 %% Obtain shear force and bending moment distribution
 % take moments about cut face - moment arm is x(i)-x
 shearForce = zeros(1, length(x));
@@ -55,6 +67,18 @@ bendingMoments = bendingMoments - overallMoments; % CW - ACW; bendingMoments def
 figure;
 plot(x, distLoad);
 figure;
-plot(x, shearForce);
+hold on;
+grid on;
+title('Shear Force along fuselage length');
+xlabel('x [m]');
+ylabel('Shear Force [N]');
+plot(x, shearForce, 'LineWidth', 2);
+hold off;
 figure;
-plot(x, bendingMoments);
+hold on;
+grid on;
+title('Bending Moment along fuselage length');
+xlabel('x [m]');
+ylabel('Bending Moment [Nm]');
+plot(x, bendingMoments, 'LineWidth', 2);
+hold off;
