@@ -22,13 +22,16 @@ distLoad = zeros(1, length(x));
 for i=1:length(massArray)
     if conc(i) == 999
         for j=distStart(i)*10:distEnd(i)*10
-            distLoad(j+1) = distLoad(j+1) + massArray(i);
+            distLoad(j+1) = distLoad(j+1) + massArray(i)/(distEnd(i)-distStart(i));
         end
     else
         distLoad(conc(i)*10+1) = distLoad(conc(i)*10+1) + massArray(i);
     end 
 end
 
+%% Multiply by load factor*g
+n = 1.5*2.5*9.81;
+distLoad = distLoad.*n;
 %% Obtain reaction forces
 RR = (sum(distLoad.*x) - x_tail*RT - x_frontSpar*(sum(distLoad)-RT))/(x_rearSpar-x_frontSpar);
 RF = (sum(distLoad.*x) - x_tail*RT - x_rearSpar*(sum(distLoad)-RT))/(x_frontSpar-x_rearSpar);
@@ -55,11 +58,29 @@ end
 
 %% Plot result
 figure;
-plot(x, distLoad);
+hold on;
+grid on;
+title('Distributed Load along fuselage length');
+xlabel('x [m]');
+ylabel('Distributed Load [N]');
+plot(x, distLoad, 'LineWidth', 2);
+hold off;
 figure;
-plot(x, shearForce);
+hold on;
+grid on;
+title('Shear Force along fuselage length');
+xlabel('x [m]');
+ylabel('Shear Force [N]');
+plot(x, shearForce, 'LineWidth', 2);
+hold off;
 figure;
-plot(x, bendingMoments);
+hold on;
+grid on;
+title('Bending Moment along fuselage length');
+xlabel('x [m]');
+ylabel('Bending Moment [Nm]');
+plot(x, bendingMoments, 'LineWidth', 2);
+hold off;
 
 %% Shear Flow
 thickness = geoParams('thickness');
