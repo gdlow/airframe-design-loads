@@ -119,6 +119,8 @@ legend('Shear Force on the Wing due to self-weight and lift', ...
 hold off
 
 M_0=0.5*rho*cruiseVelocity^2.*chord.^2*CM0_w;
+distLoad(1:loc_1-1) = distLoad(1:loc_1-1) + engineWeight_1;
+distLoad(1:loc_2-1) = distLoad(1:loc_2-1) + engineWeight_2;
 T=distLift.*a-(distLoad-distLift).*b-M_0;
 
 figure;
