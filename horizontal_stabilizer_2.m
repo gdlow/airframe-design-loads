@@ -57,7 +57,6 @@ legend('Elliptical Lift Distribution', 'Distributed Weight due to Self-Weight', 
 hold off
 
 % moment distribution
-bendingMomentWing_l = bendingMomentWing_l;
 figure;
 hold on;
 grid on; grid minor;
@@ -120,7 +119,6 @@ legend('Elliptical Lift Distribution', 'Distributed Weight due to Self-Weight', 
 hold off
 
 % moment distribution
-bendingMomentWing_r = bendingMomentWing_r;
 figure;
 hold on;
 grid on; grid minor;
