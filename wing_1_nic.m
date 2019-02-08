@@ -25,7 +25,7 @@ fuelTankLen = geoParams('fuelTankLen'); % pct of semi-span from root
 %% Enter operating conditions and pitch aerodyamic moment
 CM0_w = geoParams('CM0_w'); % pitch aerodynamic moment from airofoil data
 cruiseVelocity = 232.78;
-rho = 1.1; % at altitude 37000 ft
+rho = 0.350085776097978; % at altitude 37000 ft
 
 %% Get values from wing_load and fuel_load
 
@@ -100,12 +100,13 @@ plot(x,totalShearForce,'k')
 hold off
 
 M_0=0.5*rho*cruiseVelocity^2.*chord.^2*CM0_w;
-T=distLift.*a*wingSemiSpan+(distLoad-distLift).*b*wingSemiSpan-M_0;
+T=distLift.*a-(distLoad-distLift).*b-M_0;
 
 figure;
 hold on
 plot(x,T) % torque along span
 hold off
+
 %% nic's wing structure sizing
 
 % fixed wing parameters determined during AVD projet
@@ -315,12 +316,24 @@ for j=1:99
     end
 end
 
-for j = 1:80
-   % rear spar
-   if t_rear_min_2(j) < 6.5*10^-3
-      t_rear_min_2(j) = 6.5*10^-3;
-   end    
+% rear spar
+for j=1:99
+    if t_rear_min_2(j+1)>t_rear_min_2(j)
+        t_rear_min_2(j) = t_rear_min_2(j+1);
+    end
 end
+for j=1:98
+    if t_rear_min_2(j+2)>t_rear_min_2(j)
+        t_rear_min_2(j) = t_rear_min_2(j+2);
+    end
+end
+
+% for j = 1:80
+%    % rear spar
+%    if t_rear_min_2(j) < 6.5*10^-3
+%       t_rear_min_2(j) = 6.5*10^-3;
+%    end    
+% end
 
 figure
 hold on
@@ -342,18 +355,17 @@ shear_front_max = max(shear_front_spar);
 shear_rear_max = max(shear_rear_spar);
 
 % critical stress
-shear_crit_front = 8.98 .* E_spar .* (t_front./h_wingBox).^2;
-shear_crit_rear = 8.98 .* E_spar .* (t_rear./h_wingBox).^2;
+shear_crit_front = 8.98 .* E_spar .* (t_front_min_2./h_wingBox).^2;
+shear_crit_rear = 8.98 .* E_spar .* (t_rear_min_2./h_wingBox).^2;
 
 max(shear_crit_front)
 max(shear_crit_rear)
 
-% yield stress at any point
 
-% spar cap area THIS IS WRONG
+% spar cap area 
 figure
-yield_spar = 550 * 10^6; % UPDATE THIS VALUE
-A = totalMoments ./ ((yield_spar)*h_wingBox);
+yield_spar = 529.5 * 10^6; % UPDATE THIS VALUE
+A = totalMoments ./ ((yield_spar).*h_wingBox);
 plot(x,A)
 
 % plotting aerofoil profile
@@ -432,6 +444,7 @@ plot(catchpole_4(:,1),catchpole_4(:,2),'b-.')
 plot(catchpole_5(:,1),catchpole_5(:,2),'r--')
 xlabel('$\frac{h}{b}$','Interpreter','latex','FontSize',20)
 ylabel('$\frac{\sigma_{cr}}{\sigma_0}$','Interpreter','latex','FontSize',20)
+legend('$\frac{t_s}{t} = 1.0$','$\frac{t_s}{t} = 1.5$','$\frac{t_s}{t} = 2.0$','$\frac{t_s}{t} = 2.5$','$\frac{t_s}{t} = 5.0$','Interpreter','latex','FontSize',12)
 hold off
 
 % possible parameter values
@@ -453,6 +466,27 @@ h_wingBox = 0.10 * chord; % height of wing box assumed 10% chord
 width_wingBox = (0.65-0.15) * chord; % width of wing box
 N_cover = (totalMoments ./ (h_wingBox .* width_wingBox))';
 
+% for l = 1: 100 % loop to vary rib spacing L
+%     for k = 1:100 % loop to vary stringer pitch b
+%         for i = 1:6 % loop iterating R_b
+%             for j = 1:5 % loop iterating R_t
+%                 L_range = linspace(0.1,2,100);
+%                 L = L_range(l);
+%                 b_range = linspace(0.01,0.4,100);
+%                 b(i,j,k) = b_range(k);
+%                 R_b1 = R_b(i);
+%                 R_t1 = R_t(j);
+%                 sigma_ratio1 = sigma_ratio(j,i);
+%                 t_with(i,j,k) = ((N_cover(1) * b(i,j,k)^2) / (sigma_ratio1 * 3.62 * E_skin * (1 + R_b1 * R_t1))).^(1/3);
+%                 F(i,j,k) = 1.314 * (((R_b1^3 * R_t1 * (4 + R_b1 * R_t1))^0.25) / (1 + R_b1 * R_t1)) * sigma_ratio1^0.25;
+% %                 t_s(i,j,k) = R_t * t_with(i,j,k)
+% %                 A_s(i,j,k) = b(i,j,k) * t(i,j,k) 
+%             end
+%         end
+%     end
+% end
+
+% Other code attempts found here aka code graveyard 
 % L = 0.1; % intial guess, needs to be optimised as well
 
 % % optimisation time
@@ -514,8 +548,8 @@ N_cover = (totalMoments ./ (h_wingBox .* width_wingBox))';
 % plot([x(1),x(100)],[417*10^6, 417*10^6])
 % hold off
 
-L = 0; % intial guess, needs to be optimised as well
-figure
+L = 0.5; % intial guess, needs to be optimised as well
+
 % optimisation time
 for k = 1:100
     
@@ -541,18 +575,24 @@ for k = 1:100
                 t1_nada(i,j,k) = ((N_cover(k) * L^2) / (3.62 * E_skin))^(1/3);
                 
                 % skin thickness and stress at root WITH stringers
-                t1_with(i,j,k) = ((N_cover(k) * b(i,j)^2) / (sigma_ratio(i,j) * 3.62 * E_skin * (1 + R_b1 * R_t1))).^(1/3);
-                plot(x, t1_with(3,3))
+                t1_with(i,j,k) = ((N_cover(k) * b(i,j)^2) / (sigma_ratio(i,j) * 3.62 * E_skin * (1 + R_b1 * R_t1)))^(1/3);
                 
+                % initial buckling stress
                 sigma_with(i,j,k) = N_cover(k)/(t1_with(i,j,k) * (1+R_t1 * R_b1));
+                
+                
+                % Euler (flexural) buckling stress
+                rho_squared(i,j,k) = (b(i,j)^2 * R_t1 * R_b1^3 * (4 + R_b1 * R_t1)) / (12 * (1 + R_t1 * R_b1)^2);
+                sigma_euler(i,j,k) = pi^2 * E_skin  * rho_squared(i,j) / L^2;
+                
                 t_stringer(i,j,k) = R_t1 * t1_with(i,j,k);
                 h_stringer(i,j,k) = R_b1 * b(i,j);
                 
                 t_e(i,j,k) = (t1_with(i,j,k) * (1 + R_t1 * R_b1));
                 
-                I(i,j,k) = 2 .* t_e(i,j,k) .* chord(k) .* h_wingBox(k) ./ 2;
-                F_crush(i,j,k) = (totalMoments(k).^2 .* h_wingBox(k) .* L .* t_e(i,j,k).* chord(k)) ./ (2 .* E_skin * I(i,j,k).^2);
-                t_rib(i,j,k) = ((F_crush(i,j,k) .* h_wingBox(k).^2) ./ (3.62 * E_skin)).^(1/3);
+                I(i,j,k) = 2 * t_e(i,j,k) * chord(k) * (h_wingBox(k) / 2)^2;
+                F_crush(i,j,k) = (totalMoments(k)^2 * h_wingBox(k) * L * t_e(i,j,k)* chord(k)) / (2 * E_skin * I(i,j,k)^2);
+                t_rib(i,j,k) = ((F_crush(i,j,k) * h_wingBox(k)^2) / (3.62 * E_skin))^(1/3);
                 
                 L_iteration = (4 .* F_variable(i,j,k)^2 .* h_wingBox(k).^2 .* t_rib(i,j,k).^2 .* E_rib ./ N_cover(k)).^(1/3);
                 
@@ -560,6 +600,9 @@ for k = 1:100
                 
                 if eps<0.001
                     L_final(i,j,k) = L_iteration;
+                    
+                    % calculating Farrar efficiency with stress
+                    F_with_stress(i,j,k)  = sigma_with(i,j,k) * sqrt(L_final/(N_cover(1) * E_skin));
                     break
                 end
             end
@@ -567,6 +610,9 @@ for k = 1:100
         end
     end
 end
+
+
+% spar_Cap = 3 * A_s % rule of thumb :)
 
 % R_b = 0.6; R_t = 2.0; F = 0.8059; sigma_ratio = 1.47566;
 % a1 = ((4 * F^2 * h_wingBox(1)^2 * h_wingBox(1)^(2/3) * E_skin)/(N_cover(1) * (3.62 * E_skin)^(2/3)))^(2/3);
@@ -596,6 +642,7 @@ end
 % hold on
 % plot(sigma_with,'rx')
 % plot(sigma_nada,'bo')
+
 
 %%
 % % integrally stiffened panels - realistic approach
