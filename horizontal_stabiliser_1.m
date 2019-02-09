@@ -35,7 +35,7 @@ aspectRatio_w = geoParams('aspectRatio_w');
 Sref = aspectRatio_w * MAC_wing^2;
 x_tail = geoParams('x_tail'); x_cg = geoParams('x_cg'); x_ac = geoParams('x_ac');
 momentArmTailPlane = x_tail - x_cg;
-momentArmWing = x_cg - x_ac; % assumes x_ac is before x_cg
+momentArmWing = -(x_cg - x_ac); % x_ac !< x_cg
 CM0_w = geoParams('CM0_w');
 M0_g = 0.5*rho*cruiseVelocity^2*Sref*MAC_wing*CM0_w;
 takeOffWeight = geoParams('takeOffWeight');
