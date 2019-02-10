@@ -12,7 +12,7 @@ aspectRatio_v = geoParams('aspectRatio_v');
 MAC_v = geoParams('MAC_v'); % [m]
 wingSemiSpan_v = aspectRatio_v * MAC_v / 2; % [m]
 N = 100; % use 100 stations, according to lecturer 
-n = 1; % load factor = 1
+n = 1.5; % load factor = 1
 concForce = 50 * 10^3; % [N]
 ac_v = geoParams('ac_v'); % aerodynamic center of vertical stabilizer[m]
 % applied torque due to horizontal stabilizer

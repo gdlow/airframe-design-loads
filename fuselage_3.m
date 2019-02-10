@@ -36,7 +36,7 @@ for i=1:length(massArray)
     end 
 end
 %% Multiply by load factor*g
-n = 1*9.81;
+n = 1.5*9.81;
 distLoad = distLoad.*n;
 
 %% Obtain reaction forces (lift and mg)

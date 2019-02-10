@@ -21,7 +21,7 @@ MAC_h = geoParams('MAC_h');
 wingSemiSpan = aspectRatio_h*MAC_h/2;
 weightStabilizer_h = geoParams('weightStabilizer_h'); % get from AVD report
 N = 100; % according to lecturer 
-n = 1;
+n = 1.5;
 
 %% Enter operating conditions and pitch aerodyamic moment
 CM0_h = geoParams('CM0_h'); % pitch aerodynamic moment from airofoil data
