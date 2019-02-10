@@ -22,14 +22,14 @@ x = 0:0.1:lenFuselage;
 %% Get distributed loads
 % Components are either taken to be point loads or evenly distributed loads
 % all measurements in S.I units
-dataRead = xlsread('loadCaseVariables.xlsx','Data','C:F');
+dataRead = xlsread('loadCaseVariables_n.xlsx','Data','C:F');
 massArray = dataRead(:,1); distStart = dataRead(:,2); distEnd = dataRead(:,3);
 conc = dataRead(:,4);
 distLoad = zeros(1, length(x));
 for i=1:length(massArray)
     if conc(i) == 999
         for j=distStart(i)*10:distEnd(i)*10
-            distLoad(j+1) = distLoad(j+1) + massArray(i)/(distEnd(i)-distStart(i));
+            distLoad(j+1) = distLoad(j+1) + massArray(i)/(distEnd(i)*10-distStart(i)*10);
         end
     else
         distLoad(conc(i)*10+1) = distLoad(conc(i)*10+1) + massArray(i);
