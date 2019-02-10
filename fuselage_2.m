@@ -11,7 +11,7 @@ radiusFuselage = geoParams('radiusFuselage');
 lenFuselage = geoParams('lenFuselage');
 x = 0:0.1:lenFuselage;
 wingBoxLoc = geoParams('wingBoxLoc');
-x_tail = geoParams('x_tail');
+x_tail = round(geoParams('x_tail'));
 % vertical stabiliser
 rootChordLen_v = geoParams('rootChordLen_v');
 tipChordLen_v = geoParams('tipChordLen_v');

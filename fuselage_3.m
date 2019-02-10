@@ -1,7 +1,7 @@
 % General analysis of a simple beam structure with 1 reaction on mg
 % aircraft is at an AoA to the ground - consider transverse component
 
-clear;clc;
+clear;clc;close all;
 
 %% Initialize positional vars
 [vals, names] = xlsread('geometryVariables.xlsx', 'Data', 'B:C');
