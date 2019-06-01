@@ -1,4 +1,4 @@
-# TwistInfidel Load Case Calculations
+# Airframe Design Load Case Calculations (AE3-406)
 
 > Created by Group 17, 30 Jan 2019
 
